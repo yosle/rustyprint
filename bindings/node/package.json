@@ -1,0 +1,26 @@
+{
+  "name": "rustyprint",
+  "version": "1.0.2",
+  "description": "HTML and CSS to PDF, with a layout engine written in Rust: no browser, no external runtime.",
+  "keywords": ["pdf", "html", "css", "html-to-pdf", "paged-media"],
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vryan95/rustyprint.git",
+    "directory": "bindings/node"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "lib/", "native/"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "compile": "node scripts/compile.js",
+    "pretest": "node scripts/compile.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js test/*.test.mjs"
+  },
+  "dependencies": {
+    "koffi": "^3.3.3"
+  }
+}
