@@ -1277,7 +1277,11 @@ mod tests {
             let standard = parse_declaration(standard, value).unwrap();
             assert_eq!(ids(&prefixed), ids(&standard));
         };
-        same("-webkit-justify-content", "justify-content", "space-between");
+        same(
+            "-webkit-justify-content",
+            "justify-content",
+            "space-between",
+        );
         same("-webkit-align-items", "align-items", "center");
         same("-webkit-flex", "flex", "1 0 auto");
         same("-webkit-transform", "transform", "rotate(45deg)");
