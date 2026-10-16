@@ -64,6 +64,12 @@ jobs:
         with:
           name: samples-${{ runner.os }}
           path: bindings/node/samples/
+      # The native library the tests ran against, to try the package on a machine without Cargo.
+      - uses: actions/upload-artifact@v7
+        if: matrix.node == '24'
+        with:
+          name: native-${{ runner.os }}-${{ runner.arch }}
+          path: bindings/node/native/
 
   # Whether every platform gives the same bytes for each sample.
   samples:
