@@ -55,3 +55,40 @@ jobs:
       - run: npm ci
       # Builds the native library with Cargo, then runs the tests against it.
       - run: npm test
+      - name: Render every sample
+        if: matrix.node == '24'
+        shell: bash
+        run: npm run --silent render-samples -- samples | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: matrix.node == '24'
+        with:
+          name: samples-${{ runner.os }}
+          path: bindings/node/samples/
+
+  # Whether every platform gives the same bytes for each sample.
+  samples:
+    name: Same PDFs on every platform
+    needs: node
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: samples-*
+      - name: Compare the PDFs' SHA-256
+        run: |
+          {
+            echo "## SHA-256 of each sample, by platform"
+            for file in samples-*/sha256.txt; do
+              echo
+              echo "${file%%/*}:"
+              echo '```'
+              cat "$file"
+              echo '```'
+            done
+            echo
+            if [ "$(sort -u samples-*/sha256.txt | wc -l)" -eq "$(wc -l < samples-Linux/sha256.txt)" ]; then
+              echo "**Every platform gave byte-identical PDFs.**"
+            else
+              echo "**The platforms gave different PDFs.**"
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"

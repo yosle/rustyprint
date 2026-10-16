@@ -17,6 +17,7 @@
   },
   "scripts": {
     "compile": "node scripts/compile.js",
+    "render-samples": "node scripts/render-samples.js",
     "pretest": "node scripts/compile.js",
     "test": "node --test --test-concurrency=1 test/*.test.js test/*.test.mjs"
   },

@@ -58,7 +58,7 @@ npm install
 npm test
 ```
 
-`npm test` builds the native library for this platform with Cargo, copies it into `native/`, then runs the tests against it. Set `RUSTYPRINT_LIBRARY` to use a library from elsewhere, such as a `rustyprint-native` release archive, without building one.
+`npm test` builds the native library for this platform with Cargo, copies it into `native/`, then runs the tests against it. `npm run render-samples` then renders every document in [demos/samples](../../demos/samples) to `samples/`, all at once, and prints what each took. Set `RUSTYPRINT_LIBRARY` to use a library from elsewhere, such as a `rustyprint-native` release archive, without building one.
 
 ## License
 
