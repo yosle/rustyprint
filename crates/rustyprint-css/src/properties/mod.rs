@@ -916,7 +916,8 @@ pub fn resolve_alias(name: &str) -> &str {
         "grid-column-gap" => "column-gap",
         "grid-gap" => "gap",
         // The `-webkit-` legacy name aliases every browser accepts (Compatibility Standard
-        // § 3.4.1), which documents written for older engines still use.
+        // § 3.4.1), which documents written for older engines still use. One of them,
+        // `-webkit-background-size`, parses differently, so it is a shorthand instead.
         "-webkit-align-content" => "align-content",
         "-webkit-align-items" => "align-items",
         "-webkit-align-self" => "align-self",
@@ -932,7 +933,6 @@ pub fn resolve_alias(name: &str) -> &str {
         "-webkit-backface-visibility" => "backface-visibility",
         "-webkit-background-clip" => "background-clip",
         "-webkit-background-origin" => "background-origin",
-        "-webkit-background-size" => "background-size",
         "-webkit-border-bottom-left-radius" => "border-bottom-left-radius",
         "-webkit-border-bottom-right-radius" => "border-bottom-right-radius",
         "-webkit-border-radius" => "border-radius",
@@ -1303,6 +1303,19 @@ mod tests {
         assert_eq!(display("-webkit-flex"), display("flex"));
         assert_eq!(display("-webkit-inline-flex"), display("inline-flex"));
         assert_eq!(display("-webkit-box"), None);
+    }
+
+    #[test]
+    fn webkit_background_size() {
+        // A single value sets both dimensions, unlike in `background-size` (whatwg/compat#28).
+        let size = |name: &str, value: &str| parse_declaration(name, value).unwrap();
+        let legacy = |value: &str| size("-webkit-background-size", value);
+        assert_eq!(legacy("10px"), size("background-size", "10px 10px"));
+        assert_eq!(legacy("50%, 10px auto"), size("background-size", "50% 50%, 10px auto"));
+        assert_eq!(legacy("auto 10px"), size("background-size", "auto 10px"));
+        assert_eq!(legacy("cover"), size("background-size", "cover"));
+        assert_ne!(size("background-size", "10px"), size("background-size", "10px 10px"));
+        assert!(parse_declaration("-webkit-background-size", "cover cover").is_err());
     }
 
     #[test]
