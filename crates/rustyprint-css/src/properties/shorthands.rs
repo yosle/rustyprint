@@ -81,6 +81,7 @@ shorthands! {
     FontSynthesis "font-synthesis";
     Background "background";
     BackgroundPosition "background-position";
+    WebkitBackgroundSize "-webkit-background-size";
     VerticalAlign "vertical-align";
     TextBox "text-box";
     WhiteSpace "white-space";
@@ -472,6 +473,7 @@ impl ShorthandId {
             ShorthandId::BackgroundPosition => {
                 vec![L::BackgroundPositionX, L::BackgroundPositionY]
             }
+            ShorthandId::WebkitBackgroundSize => vec![L::BackgroundSize],
             ShorthandId::VerticalAlign => {
                 vec![L::BaselineSource, L::AlignmentBaseline, L::BaselineShift]
             }
@@ -805,6 +807,12 @@ impl ShorthandId {
                     SpecifiedValue::BackgroundPositionX(x.into()),
                     SpecifiedValue::BackgroundPositionY(y.into()),
                 ])
+            }
+            // A legacy alias of `background-size` that parses one value differently
+            // (Compatibility Standard § 3.4.1).
+            ShorthandId::WebkitBackgroundSize => {
+                let sizes = BackgroundSize::parse_legacy_layers(input)?;
+                Ok(vec![SpecifiedValue::BackgroundSize(sizes)])
             }
             ShorthandId::Gap => {
                 let row = Gap::parse(input)?;

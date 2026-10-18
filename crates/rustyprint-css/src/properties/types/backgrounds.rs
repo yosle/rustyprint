@@ -249,6 +249,16 @@ pub enum BackgroundSize<T> {
 
 impl BackgroundSize<SpecifiedLengthPercentage> {
     pub(crate) fn parse_one(input: &mut Parser<'_>) -> Result<Self> {
+        Self::parse_layer(input, false)
+    }
+
+    /// `-webkit-background-size`, where a single value sets both dimensions: `10px` is
+    /// `10px 10px`, not `10px auto` (whatwg/compat#28).
+    pub(crate) fn parse_legacy_layers(input: &mut Parser<'_>) -> Result<Arc<[Self]>> {
+        layers(input, |input| Self::parse_layer(input, true))
+    }
+
+    fn parse_layer(input: &mut Parser<'_>, legacy: bool) -> Result<Self> {
         if let Ok(keyword) = input.try_parse(|input| {
             let ident = input.expect_ident_cloned()?.to_ascii_lowercase();
             match ident.as_str() {
@@ -269,7 +279,11 @@ impl BackgroundSize<SpecifiedLengthPercentage> {
             Ok(Some(parse_length_percentage(input, true, true)?))
         };
         let width = component(input)?;
-        let height = input.try_parse(component).unwrap_or(None);
+        let height = match input.try_parse(component) {
+            Ok(height) => height,
+            Err(_) if legacy => width.clone(),
+            Err(_) => None,
+        };
         Ok(BackgroundSize::Explicit(width, height))
     }
 }

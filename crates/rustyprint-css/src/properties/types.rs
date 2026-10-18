@@ -669,6 +669,12 @@ impl Display {
             "inline-table" => normal(O::Inline, I::Table),
             "inline-flex" => normal(O::Inline, I::Flex),
             "inline-grid" => normal(O::Inline, I::Grid),
+            // Legacy `-webkit-` aliases (Compatibility Standard § 3.4.5). `-webkit-box` and
+            // `-webkit-inline-box` are left out: they stand for the 2009 flexbox, whose
+            // `-webkit-box-*` properties are not supported, so mapping them would lay out
+            // differently from the browsers that documents using them were written for.
+            "-webkit-flex" => normal(O::Block, I::Flex),
+            "-webkit-inline-flex" => normal(O::Inline, I::Flex),
             "table-row-group" => Display::Internal(T::TableRowGroup),
             "table-header-group" => Display::Internal(T::TableHeaderGroup),
             "table-footer-group" => Display::Internal(T::TableFooterGroup),

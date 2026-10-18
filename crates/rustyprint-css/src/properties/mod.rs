@@ -915,6 +915,65 @@ pub fn resolve_alias(name: &str) -> &str {
         "grid-row-gap" => "row-gap",
         "grid-column-gap" => "column-gap",
         "grid-gap" => "gap",
+        // The `-webkit-` legacy name aliases every browser accepts (Compatibility Standard
+        // § 3.4.1), which documents written for older engines still use. One of them,
+        // `-webkit-background-size`, parses differently, so it is a shorthand instead.
+        "-webkit-align-content" => "align-content",
+        "-webkit-align-items" => "align-items",
+        "-webkit-align-self" => "align-self",
+        "-webkit-animation" => "animation",
+        "-webkit-animation-delay" => "animation-delay",
+        "-webkit-animation-direction" => "animation-direction",
+        "-webkit-animation-duration" => "animation-duration",
+        "-webkit-animation-fill-mode" => "animation-fill-mode",
+        "-webkit-animation-iteration-count" => "animation-iteration-count",
+        "-webkit-animation-name" => "animation-name",
+        "-webkit-animation-play-state" => "animation-play-state",
+        "-webkit-animation-timing-function" => "animation-timing-function",
+        "-webkit-backface-visibility" => "backface-visibility",
+        "-webkit-background-clip" => "background-clip",
+        "-webkit-background-origin" => "background-origin",
+        "-webkit-border-bottom-left-radius" => "border-bottom-left-radius",
+        "-webkit-border-bottom-right-radius" => "border-bottom-right-radius",
+        "-webkit-border-radius" => "border-radius",
+        "-webkit-border-top-left-radius" => "border-top-left-radius",
+        "-webkit-border-top-right-radius" => "border-top-right-radius",
+        "-webkit-box-shadow" => "box-shadow",
+        "-webkit-box-sizing" => "box-sizing",
+        "-webkit-filter" => "filter",
+        "-webkit-flex" => "flex",
+        "-webkit-flex-basis" => "flex-basis",
+        "-webkit-flex-direction" => "flex-direction",
+        "-webkit-flex-flow" => "flex-flow",
+        "-webkit-flex-grow" => "flex-grow",
+        "-webkit-flex-shrink" => "flex-shrink",
+        "-webkit-flex-wrap" => "flex-wrap",
+        "-webkit-justify-content" => "justify-content",
+        "-webkit-mask" => "mask",
+        "-webkit-mask-box-image" => "mask-border",
+        "-webkit-mask-box-image-outset" => "mask-border-outset",
+        "-webkit-mask-box-image-repeat" => "mask-border-repeat",
+        "-webkit-mask-box-image-slice" => "mask-border-slice",
+        "-webkit-mask-box-image-source" => "mask-border-source",
+        "-webkit-mask-box-image-width" => "mask-border-width",
+        "-webkit-mask-clip" => "mask-clip",
+        "-webkit-mask-composite" => "mask-composite",
+        "-webkit-mask-image" => "mask-image",
+        "-webkit-mask-origin" => "mask-origin",
+        "-webkit-mask-position" => "mask-position",
+        "-webkit-mask-repeat" => "mask-repeat",
+        "-webkit-mask-size" => "mask-size",
+        "-webkit-order" => "order",
+        "-webkit-perspective" => "perspective",
+        "-webkit-perspective-origin" => "perspective-origin",
+        "-webkit-transform" => "transform",
+        "-webkit-transform-origin" => "transform-origin",
+        "-webkit-transform-style" => "transform-style",
+        "-webkit-transition" => "transition",
+        "-webkit-transition-delay" => "transition-delay",
+        "-webkit-transition-duration" => "transition-duration",
+        "-webkit-transition-property" => "transition-property",
+        "-webkit-transition-timing-function" => "transition-timing-function",
         other => other,
     }
 }
@@ -1208,6 +1267,61 @@ mod tests {
                 .unwrap_err()
                 .contains("unsupported")
         );
+    }
+
+    #[test]
+    fn webkit_legacy_aliases() {
+        // A prefixed name sets the property it aliases (Compatibility Standard § 3.4.1).
+        let same = |prefixed: &str, standard: &str, value: &str| {
+            let prefixed = parse_declaration(prefixed, value).unwrap();
+            let standard = parse_declaration(standard, value).unwrap();
+            assert_eq!(ids(&prefixed), ids(&standard));
+        };
+        same(
+            "-webkit-justify-content",
+            "justify-content",
+            "space-between",
+        );
+        same("-webkit-align-items", "align-items", "center");
+        same("-webkit-flex", "flex", "1 0 auto");
+        same("-webkit-transform", "transform", "rotate(45deg)");
+        same("-webkit-mask-image", "mask-image", "none");
+        assert!(
+            parse_declaration("-webkit-justify-content", "sideways")
+                .unwrap_err()
+                .contains("invalid value")
+        );
+
+        // So do the prefixed `display` keywords (§ 3.4.5), but not the 2009 flexbox's.
+        let display = |value: &str| -> Option<Display> {
+            match parse_declaration("display", value).ok()?.pop()? {
+                PropertyDeclaration::Value(SpecifiedValue::Display(display)) => Some(display),
+                _ => None,
+            }
+        };
+        assert!(display("-webkit-flex").is_some());
+        assert_eq!(display("-webkit-flex"), display("flex"));
+        assert_eq!(display("-webkit-inline-flex"), display("inline-flex"));
+        assert_eq!(display("-webkit-box"), None);
+    }
+
+    #[test]
+    fn webkit_background_size() {
+        // A single value sets both dimensions, unlike in `background-size` (whatwg/compat#28).
+        let size = |name: &str, value: &str| parse_declaration(name, value).unwrap();
+        let legacy = |value: &str| size("-webkit-background-size", value);
+        assert_eq!(legacy("10px"), size("background-size", "10px 10px"));
+        assert_eq!(
+            legacy("50%, 10px auto"),
+            size("background-size", "50% 50%, 10px auto")
+        );
+        assert_eq!(legacy("auto 10px"), size("background-size", "auto 10px"));
+        assert_eq!(legacy("cover"), size("background-size", "cover"));
+        assert_ne!(
+            size("background-size", "10px"),
+            size("background-size", "10px 10px")
+        );
+        assert!(parse_declaration("-webkit-background-size", "cover cover").is_err());
     }
 
     #[test]
