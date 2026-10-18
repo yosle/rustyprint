@@ -1311,10 +1311,16 @@ mod tests {
         let size = |name: &str, value: &str| parse_declaration(name, value).unwrap();
         let legacy = |value: &str| size("-webkit-background-size", value);
         assert_eq!(legacy("10px"), size("background-size", "10px 10px"));
-        assert_eq!(legacy("50%, 10px auto"), size("background-size", "50% 50%, 10px auto"));
+        assert_eq!(
+            legacy("50%, 10px auto"),
+            size("background-size", "50% 50%, 10px auto")
+        );
         assert_eq!(legacy("auto 10px"), size("background-size", "auto 10px"));
         assert_eq!(legacy("cover"), size("background-size", "cover"));
-        assert_ne!(size("background-size", "10px"), size("background-size", "10px 10px"));
+        assert_ne!(
+            size("background-size", "10px"),
+            size("background-size", "10px 10px")
+        );
         assert!(parse_declaration("-webkit-background-size", "cover cover").is_err());
     }
 
